@@ -1,0 +1,22 @@
+#!/bin/sh
+
+# Define the file path
+asoundrc_file=~/.asoundrc
+
+# Define the configurations
+blueout_config='playback.pcm "blueout"'
+softmixer_config='playback.pcm "softmixer"'
+
+# Check if the file exists
+if [ -f "$asoundrc_file" ]; then
+    # Check if blueout configuration is present
+    if grep -q "$blueout_config" "$asoundrc_file"; then
+        # Print blueout output
+        printf " %s%%\n" $(bluealsa-cli volume /org/bluealsa/hci0/dev_F0_D3_1F_78_3D_31/a2dpsrc/sink | sed 's/[^0-9]*\([0-9]*\).*/\1/')
+    # Check if softmixer configuration is present
+    elif grep -q "$softmixer_config" "$asoundrc_file"; then
+        # Print softmixer volume
+        printf " %s%%\n" "$(amixer sget Master | awk -F"[][]" '/Mono:/ { print $2 }' | sed s/%// )"
+    fi
+fi
+
